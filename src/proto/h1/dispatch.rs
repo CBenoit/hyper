@@ -134,6 +134,8 @@ where
     ) -> Poll<crate::Result<Dispatched>> {
         T::update_date();
 
+        debug!("hyper::h1::dispatch: poll_inner");
+
         ready!(self.poll_loop(cx))?;
 
         if self.is_done() {
@@ -185,8 +187,10 @@ where
             if self.is_closing {
                 return Poll::Ready(Ok(()));
             } else if self.conn.can_read_head() {
+                debug!("hyper::h1::dispatch: poll_read (can read head)");
                 ready!(self.poll_read_head(cx))?;
             } else if let Some(mut body) = self.body_tx.take() {
+                debug!("hyper::h1::dispatch: poll_read (has body)");
                 if self.conn.can_read_body() {
                     match body.poll_ready(cx) {
                         Poll::Ready(Ok(())) => (),

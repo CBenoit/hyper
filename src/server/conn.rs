@@ -68,7 +68,7 @@ cfg_feature! {
     use bytes::Bytes;
     use pin_project_lite::pin_project;
     use tokio::io::{AsyncRead, AsyncWrite};
-    use tracing::trace;
+    use tracing::{trace, debug};
 
     use super::accept::Accept;
     use crate::body::{Body, HttpBody};
@@ -656,6 +656,7 @@ impl<E> Http<E> {
         #[cfg(feature = "http1")]
         macro_rules! h1 {
             () => {{
+                debug!("hyper::conn: HTTP/1");
                 let mut conn = proto::Conn::new(io);
                 if !self.h1_keep_alive {
                     conn.disable_keep_alive();
@@ -923,6 +924,7 @@ where
     type Output = crate::Result<()>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Self::Output> {
+        debug!("hyper::Connection::poll");
         loop {
             match ready!(Pin::new(self.conn.as_mut().unwrap()).poll(cx)) {
                 Ok(done) => {
